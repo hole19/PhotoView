@@ -95,6 +95,8 @@ public class PhotoViewAttacher implements View.OnTouchListener,
     private boolean mZoomEnabled = true;
     private ScaleType mScaleType = ScaleType.FIT_CENTER;
 
+    private boolean mPanningEnabled = true;
+
     private OnGestureListener onGestureListener = new OnGestureListener() {
         @Override
         public void onDrag(float dx, float dy) {
@@ -104,8 +106,11 @@ public class PhotoViewAttacher implements View.OnTouchListener,
             if (mOnViewDragListener != null) {
                 mOnViewDragListener.onDrag(dx, dy);
             }
-            mSuppMatrix.postTranslate(dx, dy);
-            checkAndDisplayMatrix();
+
+            if (mPanningEnabled) {
+                mSuppMatrix.postTranslate(dx, dy);
+                checkAndDisplayMatrix();
+            }
 
             /*
              * Here we decide whether to let the ImageView's parent to start taking
@@ -118,7 +123,8 @@ public class PhotoViewAttacher implements View.OnTouchListener,
              */
             ViewParent parent = mImageView.getParent();
             if (mAllowParentInterceptOnEdge && !mScaleDragDetector.isScaling() && !mBlockParentIntercept) {
-                if (mHorizontalScrollEdge == HORIZONTAL_EDGE_BOTH
+                if (!mPanningEnabled
+                        || mHorizontalScrollEdge == HORIZONTAL_EDGE_BOTH
                         || (mHorizontalScrollEdge == HORIZONTAL_EDGE_LEFT && dx >= 1f)
                         || (mHorizontalScrollEdge == HORIZONTAL_EDGE_RIGHT && dx <= -1f)
                         || (mVerticalScrollEdge == VERTICAL_EDGE_TOP && dy >= 1f)
@@ -136,6 +142,11 @@ public class PhotoViewAttacher implements View.OnTouchListener,
 
         @Override
         public void onFling(float startX, float startY, float velocityX, float velocityY) {
+            // ignore fling when panning is disabled
+            if (!mPanningEnabled) {
+                return;
+            }
+
             mCurrentFlingRunnable = new FlingRunnable(mImageView.getContext());
             mCurrentFlingRunnable.fling(getImageViewWidth(mImageView),
                 getImageViewHeight(mImageView), (int) velocityX, (int) velocityY);
@@ -266,6 +277,10 @@ public class PhotoViewAttacher implements View.OnTouchListener,
         this.mSingleFlingListener = onSingleFlingListener;
     }
 
+    public void setPanningEnabled(boolean panningEnabled) {
+        mPanningEnabled = panningEnabled;
+    }
+
     @Deprecated
     public boolean isZoomEnabled() {
         return mZoomEnabled;
@@ -337,6 +352,11 @@ public class PhotoViewAttacher implements View.OnTouchListener,
 
     @Override
     public boolean onTouch(View v, MotionEvent ev) {
+        // if both panning and zooming are disable, we should ignore touch handling.
+        if (!mPanningEnabled && !mZoomEnabled) {
+            return false;
+        }
+
         boolean handled = false;
         if (mZoomEnabled && Util.hasDrawable((ImageView) v)) {
             switch (ev.getAction()) {
