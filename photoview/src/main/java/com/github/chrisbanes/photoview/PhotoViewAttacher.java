@@ -31,6 +31,8 @@ import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
 import android.widget.OverScroller;
 
+import androidx.annotation.Nullable;
+
 /**
  * The component of {@link PhotoView} which does the work allowing for zooming, scaling, panning, etc.
  * It is made public in case you need to subclass something other than AppCompatImageView and still
@@ -96,6 +98,12 @@ public class PhotoViewAttacher implements View.OnTouchListener,
     private ScaleType mScaleType = ScaleType.FIT_CENTER;
 
     private boolean mPanningEnabled = true;
+
+    /**
+     * The attacher matrix animator. This is the animator that is used when we want to animate a
+     * translation.
+     */
+    private final PhotoViewAttacherMatrixAnimator mMatrixAnimator = new PhotoViewAttacherMatrixAnimator(this);
 
     private OnGestureListener onGestureListener = new OnGestureListener() {
         @Override
@@ -339,6 +347,33 @@ public class PhotoViewAttacher implements View.OnTouchListener,
 
     public ScaleType getScaleType() {
         return mScaleType;
+    }
+
+    public void setTranslate(float dx, float dy) {
+        if (mScaleDragDetector.isScaling()) {
+            return; // Do not drag if we are already scaling
+        }
+
+        mSuppMatrix.postTranslate(dx, dy);
+        checkAndDisplayMatrix();
+    }
+
+    public void scaleAndCenterAt(float scale, float cX, float cY, @Nullable PhotoViewAnimationListener listener) {
+        Matrix matrix = new Matrix();
+        float[] values = {
+                scale, 0f, Math.min(-(cX * scale - mImageView.getWidth() / 2), 0f),
+                0f, scale, Math.min(-(cY * scale - mImageView.getHeight() / 2), 0f),
+                0f, 0f, 1f};
+        matrix.setValues(values);
+
+        Matrix originalMatrix = new Matrix();
+        getDisplayMatrix(originalMatrix);
+
+        animateBetweenMatrixes(originalMatrix, matrix, listener);
+    }
+
+    private void animateBetweenMatrixes(Matrix originalMatrix, Matrix finalMatrix, @Nullable PhotoViewAnimationListener listener) {
+        mMatrixAnimator.animate(originalMatrix, finalMatrix, listener);
     }
 
     @Override
