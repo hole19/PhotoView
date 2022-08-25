@@ -17,6 +17,10 @@ allprojects {
         google()
         jcenter()
     }
+
+    tasks.withType(Javadoc) {
+        excludes = ['**/*.kt']
+    }
 }
 
 ext {
