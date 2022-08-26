@@ -393,7 +393,7 @@ public class PhotoViewAttacher implements View.OnTouchListener,
         }
 
         boolean handled = false;
-        if (mZoomEnabled && Util.hasDrawable((ImageView) v)) {
+        if (Util.hasDrawable((ImageView) v)) {
             switch (ev.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     ViewParent parent = v.getParent();
