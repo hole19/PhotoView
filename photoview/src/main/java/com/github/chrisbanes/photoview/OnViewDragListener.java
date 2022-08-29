@@ -13,4 +13,10 @@ public interface OnViewDragListener {
      * @param dy The change of the coordinates in the y-direction
      */
     void onDrag(float dx, float dy);
+
+    /**
+     * Callback for when a user was dragging and it dropped.
+     */
+    void onDrop();
+
 }

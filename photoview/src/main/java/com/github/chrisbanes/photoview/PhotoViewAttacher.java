@@ -149,6 +149,13 @@ public class PhotoViewAttacher implements View.OnTouchListener,
         }
 
         @Override
+        public void onDrop() {
+            if (mOnViewDragListener != null) {
+                mOnViewDragListener.onDrop();
+            }
+        }
+
+        @Override
         public void onFling(float startX, float startY, float velocityX, float velocityY) {
             // ignore fling when panning is disabled
             if (!mPanningEnabled) {

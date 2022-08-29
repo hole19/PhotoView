@@ -25,4 +25,6 @@ interface OnGestureListener {
     void onScale(float scaleFactor, float focusX, float focusY);
 
     void onScale(float scaleFactor, float focusX, float focusY, float dx, float dy);
+
+    void onDrop();
 }

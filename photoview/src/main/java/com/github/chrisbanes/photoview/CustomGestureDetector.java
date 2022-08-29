@@ -166,6 +166,8 @@ class CustomGestureDetector {
             case MotionEvent.ACTION_UP:
                 mActivePointerId = INVALID_POINTER_ID;
                 if (mIsDragging) {
+                    mListener.onDrop();
+
                     if (null != mVelocityTracker) {
                         mLastTouchX = getActiveX(ev);
                         mLastTouchY = getActiveY(ev);
